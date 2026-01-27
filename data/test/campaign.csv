@@ -1,0 +1,2 @@
+name,start_date,end_date,on_duty_estimates,rest_cap_hours
+test,2026-02-19,2026-03-26,"{""soldier"": 20, ""commander"": 3, ""mp"": 1, ""rsp"": 1, ""smbz"": 2, ""medic"": 1, ""officer"": 2}",12

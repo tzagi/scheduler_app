@@ -1,0 +1,28 @@
+id,name,start_time,duration_hours,roles_required,continuous,instances,notes
+kitchen_cook,Kitchen Cook,00:00,24,"{""cook"": 1}",true,1,24h rotation - someone always on duty
+kitchen_helper,Kitchen Helper,00:00,24,"{""soldier"": 1}",true,1,24h rotation - someone always on duty
+guard1_shift1,Guard 1 - Shift 1,00:00,4,"{""soldier"": 1}",false,1,
+guard1_shift2,Guard 1 - Shift 2,04:00,4,"{""soldier"": 1}",false,1,
+guard1_shift3,Guard 1 - Shift 3,08:00,4,"{""soldier"": 1}",false,1,
+guard1_shift4,Guard 1 - Shift 4,12:00,4,"{""soldier"": 1}",false,1,
+guard1_shift5,Guard 1 - Shift 5,16:00,4,"{""soldier"": 1}",false,1,
+guard1_shift6,Guard 1 - Shift 6,20:00,4,"{""soldier"": 1}",false,1,
+guard2_shift1,Guard 2 - Shift 1,00:00,4,"{""soldier"": 1}",false,1,
+guard2_shift2,Guard 2 - Shift 2,04:00,4,"{""soldier"": 1}",false,1,
+guard2_shift3,Guard 2 - Shift 3,08:00,4,"{""soldier"": 1}",false,1,
+guard2_shift4,Guard 2 - Shift 4,12:00,4,"{""soldier"": 1}",false,1,
+guard2_shift5,Guard 2 - Shift 5,16:00,4,"{""soldier"": 1}",false,1,
+guard2_shift6,Guard 2 - Shift 6,20:00,4,"{""soldier"": 1}",false,1,
+patrol1_morning,Patrol 1 - Morning,06:00,8,"{""commander"": 1, ""soldier"": 2}",false,1,
+patrol2_morning,Patrol 2 - Morning,07:00,8,"{""commander"": 1, ""soldier"": 2}",false,1,Starts 1h after Patrol 1
+patrol1_noon,Patrol 1 - Noon,14:00,8,"{""commander"": 1, ""soldier"": 2}",false,1,
+patrol2_noon,Patrol 2 - Noon,15:00,8,"{""commander"": 1, ""soldier"": 2}",false,1,Starts 1h after Patrol 1
+patrol1_night,Patrol 1 - Night,22:00,8,"{""commander"": 1, ""soldier"": 3}",false,1,
+patrol2_night,Patrol 2 - Night,23:00,8,"{""commander"": 1, ""soldier"": 3}",false,1,Starts 1h after Patrol 1
+standby_morning,Standby Unit - Morning,14:00,8,"{""commander"": 1, ""soldier"": 3}",false,1,After morning patrol ends
+standby_noon,Standby Unit - Noon,22:00,8,"{""commander"": 1, ""soldier"": 3}",false,1,After noon patrol ends
+standby_night,Standby Unit - Night,06:00,8,"{""commander"": 1, ""soldier"": 3}",false,1,After night patrol ends
+base_commander,Base Commander,00:00,24,"{""officer"": 1}",true,1,officer or samal - 24h rotation
+base_medic,Base Medic,00:00,24,"{""medic"": 1}",true,1,24h rotation
+hapak,Hapak,00:00,24,"{""mp"": 1, ""medic"": 1, ""soldier"": 2}",true,1,Prefer staff unit soldiers
+rsp,RSP,00:00,24,"{""rsp"": 1}",true,1,24h rotation
