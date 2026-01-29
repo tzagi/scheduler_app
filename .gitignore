@@ -1,0 +1,6 @@
+.vscode/settings.json
+__pycache__/__init__.cpython-313.pyc
+__pycache__/app.cpython-313.pyc
+__pycache__/csv_store.cpython-313.pyc
+__pycache__/data_models.cpython-313.pyc
+__pycache__/scheduler.cpython-313.pyc
