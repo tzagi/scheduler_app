@@ -298,6 +298,7 @@ def attempt_generate(
         yesterday = day - timedelta(days=1)
         tomorrow = day + timedelta(days=1)
         tomorrow_str = tomorrow.strftime("%Y-%m-%d")
+        is_weekend = (day.weekday() in [4, 5]) # Fri or Sat
         is_saturday = (day.weekday() == 5)
         
         available = [p for p in people if day_str not in p.unavailable_dates]
@@ -377,6 +378,12 @@ def attempt_generate(
         
         # --- Normal Generation Logic ---
         
+        def get_req_priority(r):
+            if r == 'total_command': return -10
+            if r == 'commander': return -5
+            if r == 'total_soldiers': return 10
+            return 0
+
         daily_reqs = []
         for req in requirements:
             qualified_count = len([p for p in people if req.role in p.roles])
@@ -400,10 +407,12 @@ def attempt_generate(
                 'role': req.role,
                 'total': needed,
                 'remaining': needed,
-                'rarity': qualified_count
+                'rarity': qualified_count,
+                'priority': get_req_priority(req.role)
             })
         
-        daily_reqs.sort(key=lambda x: x['rarity'])
+        # Sort by priority THEN rarity
+        daily_reqs.sort(key=lambda x: (x['priority'], x['rarity']))
         
         total_needed = sum(r['remaining'] for r in daily_reqs)
         
@@ -442,35 +451,33 @@ def attempt_generate(
                     if not worked_yesterday and tomorrow_str in person.unavailable_dates:
                         continue
                     
-                    # 1. High-order workload penalty (Minimize differences)
-                    # Using an 8th power penalty still forces balance, but allows preferences to compete.
+                    # 1. Balanced workload penalty
+                    # Using POWER 2 instead of 8 to allow preferences and streaks to have influence
                     projected_total = current_total
                     if len(days) >= 2 and day == days[-2]:
                          projected_total += 1
-                    score = (projected_total ** 8) * 1000000
+                    score = (projected_total ** 2) * 1000000
                     
-                    # 2. Unavailability Bonus (Prioritize people who have fewer available days)
-                    # This helps people with many requests reach the same total shift count as others.
-                    score -= len(person.unavailable_dates) * 5000000
-                    
-                    # 2. Minimal Jitter
+                    # 2. Jitter
                     score += random.random() * 1000
 
                     # 3. Preferences (prefer_weekend, prefer_weekday)
+                    # Increased to 40M to be comparable/stronger than a 1-shift workload difference
                     for pref in person.preferences:
                         if pref['type'] == 'prefer_weekend':
-                            # If they prefer weekends (Fri-Sat) for vacation, they should NOT work on Saturday
-                            if is_saturday:
-                                score += 5000000  # Penalty for working
+                            if is_weekend:
+                                score += 40000000  # Penalty for working
                             else:
-                                score -= 100000   # Slight bonus for weekdays
+                                score -= 1000000   # Bonus for weekdays
                         elif pref['type'] == 'prefer_weekday':
-                            # If they prefer weekdays for vacation, they SHOULD work on Saturday
-                            if is_saturday:
-                                score -= 5000000  # Bonus for working
+                            if is_weekend:
+                                score -= 40000000  # Bonus for working
                             else:
-                                score += 100000   # Slight penalty for weekdays
+                                score += 1000000   # Penalty for weekdays
                     
+                    # Roles Priority Score (mirroring scheduler.ts)
+                    score += get_req_priority(req['role']) * 20000000
+
                     if is_saturday:
                         if worked_yesterday:
                             score -= 10000000 
@@ -478,13 +485,14 @@ def attempt_generate(
                             score += 10000000 
                     
                     if not worked_yesterday:
-                        if days_since < 3: score += 500000  # Softened rest penalty
-                        if days_since == 2: score += 2000000 # Penalize single day vacation
+                        if days_since < 3: score += 1000000
+                        if days_since == 2: score += 50000000 # STRONG GAP PENALTY (Avoid 1-0-1)
                         if days_since < 2: score += 1000000
                     
-                    if not is_saturday and streak > 0 and streak < 3:
-                        score -= 150000
-
+                    # Streak Bonus: Encourage 2-3 day blocks
+                    if not is_weekend and streak > 0 and streak < 3:
+                        score -= 25000000
+                    
                     # 4. Post-ALAT Rotation Penalty
                     # Ensure everyone goes home at least once in the week following ALAT.
                     # We penalize picking someone who hasn't had a day off yet in this week.
@@ -773,22 +781,13 @@ def fill_extra_shifts(
 # --- Main Execution ---
 
 def main():
-    # Use the current directory as the base since the script is in the app root
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    data_dir = os.path.join(base_dir, 'data', 'test')
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     
-    people_path = os.path.join(data_dir, 'people.csv')
-    prefs_path = os.path.join(data_dir, 'preferences.csv')
-    campaign_path = os.path.join(data_dir, 'planning_campaign.csv')
+    people_path = os.path.join(root_dir, 'people.csv')
+    prefs_path = os.path.join(root_dir, 'preferences.csv')
+    campaign_path = os.path.join(root_dir, 'planning_campaign.csv')
     
-    # We'll save the output in data/test as well, to keep it consistent
-    output_dir = data_dir
-    
-    print(f"Reading files from {data_dir}...")
-    if not os.path.exists(people_path):
-        print(f"Error: Could not find {people_path}")
-        return
-    
+    print("Reading files...")
     people = load_people(people_path)
     load_preferences(prefs_path, people)
     campaigns = load_campaigns(campaign_path)
@@ -886,7 +885,7 @@ def main():
             output_filename = "vacations.csv"
         else:
             output_filename = f"vacations_{campaign.name}.csv"
-        output_path = os.path.join(output_dir, output_filename)
+        output_path = os.path.join(root_dir, output_filename)
         
         dates_full = []
         c = campaign.start_date
