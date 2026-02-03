@@ -1,0 +1,11 @@
+{
+    "name": "scheduler-app",
+    "version": "1.0.0",
+    "description": "Scheduler App for Vacations",
+    "main": "app.py",
+    "scripts": {
+        "generate-vacations": "python generate_vacations.py"
+    },
+    "author": "",
+    "license": "ISC"
+}
